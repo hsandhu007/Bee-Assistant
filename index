@@ -1,0 +1,203 @@
+
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="theme-color" content="#fed100">
+
+<title>Bee Assistant</title>
+
+<style>
+
+*{box-sizing:border-box}
+
+body{margin:0;background:#101114;color:white;font-family:Arial,sans-serif;
+
+display:flex;justify-content:center;min-height:100vh;text-align:center}
+
+main{width:100%;max-width:480px;padding:35px 22px}
+
+h1{color:#fed100;font-size:36px;margin-bottom:4px}
+
+p{color:#bbb}
+
+.bee{font-size:76px;margin:35px 0 20px}
+
+#status{min-height:48px;color:#fed100;margin:20px 0}
+
+button{border:0;border-radius:16px;padding:15px;margin:7px;
+
+font-size:16px;font-weight:bold;cursor:pointer}
+
+#listen{background:#fed100;color:#111;width:85%;font-size:18px}
+
+.small{background:#292a30;color:white}
+
+#answer{background:#1e1f24;border-radius:18px;padding:18px;min-height:60px}
+
+</style>
+
+</head>
+
+<body>
+
+<main>
+
+  <h1>🐝 BEE</h1>
+
+  <p>Your personal voice assistant</p>
+
+  <div class="bee">🐝</div>
+
+  <button id="listen">🎙️ Talk to Bee</button>
+
+  <div id="status">Tap the button and speak</div>
+
+  <div id="answer">Hello! I'm Bee. How can I help you?</div>
+
+  <p>Try: “What time is it?” or “Open YouTube”</p>
+
+  <button class="small" onclick="runCommand('what time is it')">🕒 Time</button>
+
+  <button class="small" onclick="runCommand('open youtube')">▶ YouTube</button>
+
+</main>
+
+<script>
+
+const statusBox=document.getElementById('status');
+
+const answerBox=document.getElementById('answer');
+
+function speak(text){
+
+  answerBox.textContent=text;
+
+  if('speechSynthesis' in window){
+
+    speechSynthesis.cancel();
+
+    const msg=new SpeechSynthesisUtterance(text);
+
+    msg.lang='en-US';
+
+    speechSynthesis.speak(msg);
+
+  }
+
+}
+
+function runCommand(raw){
+
+  const cmd=raw.toLowerCase().trim();
+
+  if(cmd.includes('time')){
+
+    speak('The time is '+new Date().toLocaleTimeString());
+
+  }else if(cmd.includes('date')||cmd.includes('day')){
+
+    speak('Today is '+new Date().toLocaleDateString(undefined,
+
+      {weekday:'long',year:'numeric',month:'long',day:'numeric'}));
+
+  }else if(cmd.includes('open youtube')){
+
+    speak('Opening YouTube');
+
+    setTimeout(()=>location.href='https://m.youtube.com',500);
+
+  }else if(cmd.includes('open google')){
+
+    speak('Opening Google');
+
+    setTimeout(()=>location.href='https://www.google.com',500);
+
+  }else if(cmd.includes('hello')||cmd.includes('hi bee')){
+
+    speak('Hello! I am Bee, your personal assistant.');
+
+  }else if(cmd.includes('your name')||cmd.includes('who are you')){
+
+    speak('My name is Bee. I am your personal voice assistant.');
+
+  }else{
+
+    speak('I heard you say: '+raw+
+
+      '. I do not know that command yet.');
+
+  }
+
+}
+
+document.getElementById('listen').addEventListener('click',()=>{
+
+  const Recognition=window.SpeechRecognition||
+
+                    window.webkitSpeechRecognition;
+
+  if(!Recognition){
+
+    statusBox.textContent='Voice recognition is not supported here. Try Safari.';
+
+    speak('Voice recognition is not available in this browser.');
+
+    return;
+
+  }
+
+  const recognition=new Recognition();
+
+  recognition.lang='en-US';
+
+  recognition.continuous=false;
+
+  recognition.interimResults=false;
+
+  statusBox.textContent='Listening... speak now';
+
+  recognition.onresult=e=>{
+
+    const words=e.results[0][0].transcript;
+
+    statusBox.textContent='You said: '+words;
+
+    runCommand(words);
+
+  };
+
+  recognition.onerror=e=>{
+
+    statusBox.textContent='Microphone issue: '+e.error+
+
+      '. Check microphone permission and try again.';
+
+  };
+
+  recognition.onend=()=>{
+
+    if(statusBox.textContent==='Listening... speak now'){
+
+      statusBox.textContent='Tap the microphone to try again';
+
+    }
+
+  };
+
+  try{recognition.start();}
+
+  catch(e){statusBox.textContent='Please wait a moment and try again.';}
+
+});
+
+</script>
+
+</body>
+
+</html>
